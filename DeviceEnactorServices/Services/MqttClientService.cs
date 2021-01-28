@@ -16,7 +16,7 @@ namespace DeviceEnactorServices
         string mqttPassword = "";
         int mqttPort = 1883;
         bool mqttSecure = false;
-        static IManagedMqttClient clientMqtt = new MqttFactory().CreateManagedMqttClient();
+        public static IManagedMqttClient clientMqtt = new MqttFactory().CreateManagedMqttClient();
 
         public async Task ConnectAsync(string clientId)
         {
@@ -47,7 +47,7 @@ namespace DeviceEnactorServices
         {
             if (clientMqtt != null)
             {
-                clientMqtt.PublishAsync(message);
+                await clientMqtt.PublishAsync(message);
             }
         }
 
@@ -67,13 +67,17 @@ namespace DeviceEnactorServices
             await clientMqtt.UnsubscribeAsync(topic);
         }
 
-        public async Task<DeviceMqtt> ReceivePayload(DeviceMqtt device)
+        public async Task<DeviceMqtt> ReceivePayload(MqttApplicationMessage message, DeviceMqtt device)
         {
-            clientMqtt.UseApplicationMessageReceivedHandler(e => { device.Status = Encoding.UTF8.GetString(e.ApplicationMessage.Payload); });
+            if (clientMqtt != null)
+            {
+                await clientMqtt.PublishAsync(message);
+                clientMqtt.UseApplicationMessageReceivedHandler(e => device.Status = Encoding.UTF8.GetString(e.ApplicationMessage.Payload));
+            }
             return device;
         }
 
-        private static void HandleMessageReceived(DeviceMqtt device, MqttApplicationMessage applicationMessage)
+        private void HandleMessageReceived(DeviceMqtt device, MqttApplicationMessage applicationMessage)
         {
             device.Status = Encoding.UTF8.GetString(applicationMessage.Payload);
         }

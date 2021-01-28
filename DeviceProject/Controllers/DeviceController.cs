@@ -57,8 +57,8 @@ namespace DeviceProject.Controllers
         public async Task Update(Client client, Device device)
         {
             device.ClientId = client.Id;
-            //await _db.SetDeviceStatus(client, device);
-            await _db.UpdateFromUIAsync(client, device);
+            await _db.SetDeviceStatus(client, device);
+            //await _db.UpdateFromUIAsync(client, device);
         }
 
     }

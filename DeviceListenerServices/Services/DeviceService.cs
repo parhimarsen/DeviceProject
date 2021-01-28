@@ -10,8 +10,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using DeviceListener.Interfaces;
-using Newtonsoft.Json;
-using DeviceEnactor;
 using DeviceListenerServices.Mappers;
 
 namespace DeviceListenerServices.Services
@@ -98,24 +96,25 @@ namespace DeviceListenerServices.Services
 
         public async Task SetDeviceStatus(Client client, Device device)
         {
-            if (ConnectSingleton.IsConnected == false)
+            if (device.TypeOfDevice == "Light")
             {
-                await _mqttClientService.ConnectAsync(client.Id);
-                await _mqttClientService.SubscribeAsync(device.Topic);
-                ConnectSingleton.getInstance(true);
+                if (ConnectSingleton.IsConnected == false)
+                {
+                    await _mqttClientService.ConnectAsync(client.Id);
+                    await _mqttClientService.SubscribeAsync(device.Topic);
+                    ConnectSingleton.getInstance(true);
+                }
+
+                var messagePayload = new MqttApplicationMessageBuilder()
+                                     .WithTopic(device.Topic)
+                                     .WithPayload(System.Text.Encoding.UTF8.GetBytes("status"))
+                                     .WithExactlyOnceQoS()
+                                     .WithRetainFlag()
+                                     .Build();
+
+                var newDevice = await _mqttClientService.ReceivePayload(messagePayload, device.ToMqtt());
+                await Devices.ReplaceOneAsync(new BsonDocument("_id", new ObjectId(device.Id)), newDevice.To());
             }
-
-            var messagePayload = new MqttApplicationMessageBuilder()
-                                 .WithTopic(device.Topic)
-                                 .WithPayload(device.Payload)
-                                 .WithExactlyOnceQoS()
-                                 .WithRetainFlag()
-                                 .Build();
-            await _mqttClientService.PublishAsync(messagePayload);
-
-            var newDevice = await _mqttClientService.ReceivePayload(device.ToMqtt());
-
-            var check = newDevice.Status;
         }
     }
 }

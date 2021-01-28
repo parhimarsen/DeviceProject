@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DeviceEnactorServices\DeviceEnactorServices.csproj" />
     <ProjectReference Include="..\DeviceEnactor\DeviceEnactor.csproj" />
     <ProjectReference Include="..\DeviceListener\DeviceListener.csproj" />
   </ItemGroup>

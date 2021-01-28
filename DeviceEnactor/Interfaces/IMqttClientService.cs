@@ -11,6 +11,6 @@ namespace DeviceEnactor.Interfaces
         Task SubscribeAsync(string topic, int qos = 1);
 
         Task UnsubscribeAsync(string topic);
-        Task<DeviceMqtt> ReceivePayload(DeviceMqtt payload);
+        Task<DeviceMqtt> ReceivePayload(MqttApplicationMessage message, DeviceMqtt device);
     }
 }
